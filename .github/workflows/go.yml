@@ -1,0 +1,82 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.go'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**/*.go'
+  release:
+    types:
+      - created
+
+jobs:
+  build-and-deploy:
+    runs-on: ${{ matrix.platform }}
+
+    strategy:
+      matrix:
+        platform:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+        go-version:
+          - 1.19
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Build for ${{ matrix.platform }}
+        run: |
+          go build -o bridge
+
+      - name: Test
+        run: echo "No tests to run."
+
+      - name: Find Config Files (Linux, macOS)
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: |
+          find . -name "sigma.config.yml" > config_files.txt
+
+      - name: Find Config Files (Windows)
+        if: ${{ matrix.platform == 'windows-latest' }}
+        run: |
+          Get-ChildItem -Recurse -Filter *.yml | Where-Object { $_.Name -in "sigma.config.yml"} | ForEach-Object { $_.FullName } | Out-File config_files.txt
+
+      - name: Create Zip Archive (Windows)
+        if: ${{ matrix.platform == 'windows-latest' }}
+        run: |
+          Rename-Item -Path ./bridge -NewName "bridge.exe"
+          $configFiles = Get-Content config_files.txt | ForEach-Object { $_.Trim() }
+          Compress-Archive -Path @("./bridge.exe") -DestinationPath bridge-${{ matrix.platform }}.zip
+          Compress-Archive -Path $configFiles -Update -DestinationPath bridge-${{ matrix.platform }}.zip
+
+      - name: Create Zip Archive (Linux, macOS)
+        if: ${{ matrix.platform != 'windows-latest' }}
+        run: |
+          config_files=$(cat config_files.txt | xargs)
+          zip -r bridge-${{ matrix.platform }}.zip bridge add_query add_rule $config_files
+
+      - name: Upload Assets
+        if: ${{ github.event_name == 'release' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./bridge-${{ matrix.platform }}.zip
+          asset_name: bridge-${{ matrix.platform }}.zip
+          asset_content_type: application/octet-stream
