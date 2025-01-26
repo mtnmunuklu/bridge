@@ -1,6 +1,6 @@
 module github.com/mtnmunuklu/bridge
 
-go 1.23.3
+go 1.23
 
 require (
 	github.com/alecthomas/participle v0.7.1
