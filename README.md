@@ -1,6 +1,6 @@
-<div style="display: flex; justify-content: center; align-items: center; height: auto; margin: 0; padding: 0;">
-  <img src="images/logo.webp" width="300" style="display: block; margin: 0; padding: 0; border: 0; vertical-align: bottom;">
-</div>
+<p align="center">
+  <img width="300" height="300" src="images/logo.webp">
+</p>
 
 <p align="center" style="margin: 0; padding: 0;">
   <a href="https://pkg.go.dev/github.com/mtnmunuklu/bridge">
