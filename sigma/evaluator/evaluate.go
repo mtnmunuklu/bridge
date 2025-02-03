@@ -69,35 +69,25 @@ func (rule RuleEvaluator) Bridges() (Result, error) {
 		}
 	}
 
+	// Combine the search results and condition results to form the final query strings for each condition.
+	// The query strings are stored in the QueryResults map of the result object.
 	for i, conditionResult := range result.ConditionResults {
 		conditionList := make([]string, 0, len(conditionResult))
-		specialConditions := []string{}
-
 		for _, condition := range conditionResult {
 			// If the condition matches any search identifier, replace it with the corresponding search results
 			if value, ok := result.SearchResults[condition]; ok {
-				joinedValue := ""
 				if len(conditionResult) > 1 && len(value) > 1 {
-					joinedValue = "(" + strings.Join(value, " ") + ")"
+					conditionList = append(conditionList, "("+strings.Join(value, " ")+")")
 				} else if len(value) > 1 {
-					joinedValue = strings.Join(value, " ")
+					conditionList = append(conditionList, strings.Join(value, " "))
 				} else {
-					joinedValue = strings.Join(value, "")
-				}
-
-				// Check if the value contains a special operator '|'
-				if strings.Contains(joinedValue, "|") {
-					specialConditions = append(specialConditions, joinedValue)
-				} else {
-					conditionList = append(conditionList, joinedValue)
+					conditionList = append(conditionList, strings.Join(value, ""))
 				}
 			} else {
+				// If the condition doesn't match any search identifier, add it as is to the conditionList
 				conditionList = append(conditionList, condition)
 			}
 		}
-
-		// Append special conditions at the end
-		conditionList = append(conditionList, specialConditions...)
 
 		result.QueryResults[i] = strings.Join(conditionList, "")
 
