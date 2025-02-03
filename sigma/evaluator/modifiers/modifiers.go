@@ -83,24 +83,24 @@ var Comparators = map[string]Comparator{
 	"contains":   contains{},
 	"endswith":   endswith{},
 	"startswith": startswith{},
-	//"re":         re{},
-	"cidr": cidr{},
-	"gt":   gt{},
-	"gte":  gte{},
-	"lt":   lt{},
-	"lte":  lte{},
+	"re":         re{},
+	"cidr":       cidr{},
+	"gt":         gt{},
+	"gte":        gte{},
+	"lt":         lt{},
+	"lte":        lte{},
 }
 
 var ComparatorsCaseSensitive = map[string]Comparator{
 	"contains":   containsCS{},
 	"endswith":   endswithCS{},
 	"startswith": startswithCS{},
-	//"re":         re{},
-	"cidr": cidr{},
-	"gt":   gt{},
-	"gte":  gte{},
-	"lt":   lt{},
-	"lte":  lte{},
+	"re":         re{},
+	"cidr":       cidr{},
+	"gt":         gt{},
+	"gte":        gte{},
+	"lt":         lt{},
+	"lte":        lte{},
 }
 
 var ValueModifiers = map[string]ValueModifier{
@@ -170,7 +170,7 @@ func (startswithCS) Bridges(field, value any) (string, error) {
 type re struct{}
 
 func (re) Bridges(field any, value any) (string, error) {
-	return fmt.Sprintf("| regex %v=\"%v\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
+	return fmt.Sprintf(" | regex %v=\"%v\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
 }
 
 type cidr struct{}
