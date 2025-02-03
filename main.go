@@ -261,7 +261,6 @@ func main() {
 
 			fmt.Printf("Output for rule '%s' written to file: %s\n", sigmaRule.Title, outputFilePath)
 		} else {
-			fmt.Printf("%s\n", sigmaRule.Title)
 			fmt.Printf("%s", output)
 		}
 

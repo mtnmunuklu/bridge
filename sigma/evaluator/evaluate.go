@@ -100,7 +100,7 @@ func (rule RuleEvaluator) Bridges() (Result, error) {
 		if rule.Logsource.Product != "" && rule.Logsource.Service != "" {
 			result.QueryResults[i] = fmt.Sprintf("sourcetype=\"%v\" %v", rule.Logsource.Product+"-"+rule.Logsource.Service, result.QueryResults[i])
 		} else if rule.Logsource.Product != "" && rule.Logsource.Service == "" {
-			result.QueryResults[i] = fmt.Sprintf("sourcetype=\"%v*\" %v", rule.Logsource.Product+"-%", result.QueryResults[i])
+			result.QueryResults[i] = fmt.Sprintf("sourcetype=\"%v\" %v", rule.Logsource.Product+"-*", result.QueryResults[i])
 		}
 	}
 

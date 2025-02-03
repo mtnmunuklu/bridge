@@ -83,24 +83,24 @@ var Comparators = map[string]Comparator{
 	"contains":   contains{},
 	"endswith":   endswith{},
 	"startswith": startswith{},
-	"re":         re{},
-	"cidr":       cidr{},
-	"gt":         gt{},
-	"gte":        gte{},
-	"lt":         lt{},
-	"lte":        lte{},
+	//"re":         re{},
+	"cidr": cidr{},
+	"gt":   gt{},
+	"gte":  gte{},
+	"lt":   lt{},
+	"lte":  lte{},
 }
 
 var ComparatorsCaseSensitive = map[string]Comparator{
 	"contains":   containsCS{},
 	"endswith":   endswithCS{},
 	"startswith": startswithCS{},
-	"re":         re{},
-	"cidr":       cidr{},
-	"gt":         gt{},
-	"gte":        gte{},
-	"lt":         lt{},
-	"lte":        lte{},
+	//"re":         re{},
+	"cidr": cidr{},
+	"gt":   gt{},
+	"gte":  gte{},
+	"lt":   lt{},
+	"lte":  lte{},
 }
 
 var ValueModifiers = map[string]ValueModifier{
@@ -116,26 +116,26 @@ func (baseComparator) Bridges(field, value any) (string, error) {
 		return "", nil
 	default:
 		// The Sigma spec defines that by default comparisons are case-insensitive
-		return fmt.Sprintf("%v=\"%v\"", strings.ToLower(coerceString(field)), strings.ToLower(coerceString(value))), nil
+		return fmt.Sprintf("%v=\"%v\"", strings.ToLower(coerceString(field)), strings.ToLower(EscapeBackslashes(coerceString(value)))), nil
 	}
 }
 
 type contains struct{}
 
 func (contains) Bridges(field, value any) (string, error) {
-	return fmt.Sprintf("%v=\"*%v*\"", strings.ToLower(coerceString(field)), strings.ToLower(coerceString(value))), nil
+	return fmt.Sprintf("%v=\"*%v*\"", strings.ToLower(coerceString(field)), strings.ToLower(EscapeBackslashes(coerceString(value)))), nil
 }
 
 type endswith struct{}
 
 func (endswith) Bridges(field, value any) (string, error) {
-	return fmt.Sprintf("%v=\"*%v\"", strings.ToLower(coerceString(field)), strings.ToLower(coerceString(value))), nil
+	return fmt.Sprintf("%v=\"*%v\"", strings.ToLower(coerceString(field)), strings.ToLower(EscapeBackslashes(coerceString(value)))), nil
 }
 
 type startswith struct{}
 
 func (startswith) Bridges(field, value any) (string, error) {
-	return fmt.Sprintf("%v=\"%v*\"", strings.ToLower(coerceString(field)), strings.ToLower(coerceString(value))), nil
+	return fmt.Sprintf("%v=\"%v*\"", strings.ToLower(coerceString(field)), strings.ToLower(EscapeBackslashes(coerceString(value)))), nil
 }
 
 type baseComparatorCaseSensitive struct{}
@@ -145,32 +145,32 @@ func (baseComparatorCaseSensitive) Bridges(field, value any) (string, error) {
 	case field == nil && value == "null":
 		return "", nil
 	default:
-		return fmt.Sprintf("%v=\"%v\"", strings.ToLower(coerceString(field)), coerceString(value)), nil
+		return fmt.Sprintf("%v=\"%v\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
 	}
 }
 
 type containsCS struct{}
 
 func (containsCS) Bridges(field, value any) (string, error) {
-	return fmt.Sprintf("%v=\"*%v*\"", strings.ToLower(coerceString(field)), coerceString(value)), nil
+	return fmt.Sprintf("%v=\"*%v*\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
 }
 
 type endswithCS struct{}
 
 func (endswithCS) Bridges(field, value any) (string, error) {
-	return fmt.Sprintf("%v=\"*%v\"", strings.ToLower(coerceString(field)), coerceString(value)), nil
+	return fmt.Sprintf("%v=\"*%v\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
 }
 
 type startswithCS struct{}
 
 func (startswithCS) Bridges(field, value any) (string, error) {
-	return fmt.Sprintf("%v=\"%v*\"", strings.ToLower(coerceString(field)), coerceString(value)), nil
+	return fmt.Sprintf("%v=\"%v*\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
 }
 
 type re struct{}
 
 func (re) Bridges(field any, value any) (string, error) {
-	return fmt.Sprintf("| regex %v=\"%v\"", strings.ToLower(coerceString(field)), coerceString(value)), nil
+	return fmt.Sprintf("| regex %v=\"%v\"", strings.ToLower(coerceString(field)), EscapeBackslashes(coerceString(value))), nil
 }
 
 type cidr struct{}
@@ -229,4 +229,21 @@ func coerceString(v interface{}) string {
 	default:
 		return fmt.Sprint(vv)
 	}
+}
+
+// EscapeBackslashes takes a string and doubles all backslashes (`\`).
+func EscapeBackslashes(input string) string {
+	var builder strings.Builder
+	builder.Grow(len(input)) // Optimize memory allocation for large strings
+
+	for _, char := range input {
+		if char == '\\' {
+			// Add an extra backslash for escaping
+			builder.WriteRune('\\')
+		}
+		// Write the original character (escaped or not)
+		builder.WriteRune(char)
+	}
+
+	return builder.String()
 }
